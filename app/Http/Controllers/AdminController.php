@@ -2,11 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Exceptions\SignupRequestAlreadyProcessedException;
+use App\Http\Requests\RejectSignupRequestRequest;
 use App\Models\AccountRequest;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use App\Services\SignupApprovalService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -78,6 +84,25 @@ class AdminController extends Controller
         return back()->with('success', 'Approved');
     }
 
+    public function new_approve($id, SignupApprovalService $service): RedirectResponse
+    {
+        $accountRequest = AccountRequest::findOrFail($id);
+
+        $this->authorize('review', $accountRequest);
+        // dd($accountRequest->status);
+        try {
+            $service->approve($accountRequest, Auth::user());
+
+            return redirect()
+                ->back()
+                ->with('success', 'Signup request approved successfully.');
+        } catch (SignupRequestAlreadyProcessedException | AuthorizationException $exception) {
+            return redirect()
+                ->back()
+                ->with('error', $exception->getMessage());
+        }
+    }
+
     public function reject($id)
     {
         $request = AccountRequest::findOrFail($id);
@@ -88,5 +113,29 @@ class AdminController extends Controller
         ]);
 
         return back()->with('success', 'Rejected');
+    }
+
+    public function new_reject(
+        RejectSignupRequestRequest $request,
+        $id,
+        SignupApprovalService $service
+    ): RedirectResponse {
+$accountRequest = AccountRequest::findOrFail($id);
+        // $this->authorize('review', $accountRequest);
+        try {
+            $service->reject(
+                $accountRequest,
+                $request->validated('rejection_reason'),
+                Auth::user()
+            );
+
+            return redirect()
+                ->back()
+                ->with('success', 'Signup request rejected successfully.');
+        } catch (SignupRequestAlreadyProcessedException |AuthorizationException $exception) {
+            return redirect()
+                ->back()
+                ->with('error', $exception->getMessage());
+        }
     }
 }

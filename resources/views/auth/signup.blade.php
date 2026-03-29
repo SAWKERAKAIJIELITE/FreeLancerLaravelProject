@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Signup</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         body {
             background: linear-gradient(135deg, #36b9cc, #4e73df);
@@ -23,7 +24,7 @@
         <div class="card shadow p-4 mx-auto" style="max-width: 700px;">
             <h3 class="text-center mb-4">Create Account 🚀</h3>
 
-            <form method="POST" action="/signup">
+            <form method="POST" action="/register">
                 @csrf
                 <div class="row">
                     <div class="col-md-4 mb-3">
@@ -85,11 +86,24 @@
                 </div>
                 <div class="mb-3">
                     <label>Password</label>
-                    <input type="password" name="password" class="form-control" required>
+                    <div class="input-group">
+                        <input type="password" id="password" name="password" class="form-control" required>
+                        <button type="button" class="btn btn-outline-secondary"
+                            onclick="togglePassword('password', this)">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label>Confirm Password</label>
-                    <input type="password" name="password_confirmation" class="form-control" required>
+                    <div class="input-group">
+                        <input type="password" id="password_confirmation" name="password_confirmation"
+                            class="form-control" required>
+                        <button type="button" class="btn btn-outline-secondary"
+                            onclick="togglePassword('password_confirmation', this)">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label>Role</label>
@@ -104,10 +118,11 @@
                     {{-- <input type="text" name="referral_input" placeholder="Referral Code or Username" class="form-control"
                         value="{{ old('referral_input',$referralCode ?? '') }}"> --}}
                     @if (!empty($referralCode))
-                        <input class="form-control" type="text" name="referral_input" value="{{ $referralCode }}" readonly>
+                        <input class="form-control" type="text" name="referral_input" value="{{ $referralCode }}"
+                            readonly>
                     @else
-                        <input class="form-control" type="text" name="referral_input" value="{{ old('referral_input') }}"
-                            placeholder="Referral Code or Username">
+                        <input class="form-control" type="text" name="referral_input"
+                            value="{{ old('referral_input') }}" placeholder="Referral Code or Username">
                     @endif
                     @error('referral_input')
                         <small class="text-danger">{{ $message }}</small>
@@ -135,7 +150,24 @@
             @endif
         </div>
     </div>
+    <script>
+        function togglePassword(inputId, button) {
+            const input = document.getElementById(inputId);
+            const icon = button.querySelector('i');
 
+            if (!input) return;
+
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                input.type = "password";
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        }
+    </script>
 </body>
 
 </html>

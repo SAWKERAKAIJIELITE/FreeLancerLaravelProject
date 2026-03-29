@@ -69,12 +69,12 @@
                     <td>{{ $req->username }}</td>
                     <td>{{ $req->email }}</td>
                     <td>{{ $req->country }}</td>
-                    <td>{{ $req->user()->first()?->referral_code ?? '-' }}</td>
+                    <td>{{ $req->referral_code ?? '-' }}</td>
                     <td>
                         @if ($req->status === 'accepted' && $req->user()->first())
                             <div class="input-group input-group-sm">
                                 <input type="text" id="link-{{ $req->id }}" class="form-control"
-                                    value="{{ url('/signup?ref=' . $req->user()->first()->referral_code) }}" readonly>
+                                    value="{{ url('/register?ref=' . $req->user()->first()->referral_code) }}" readonly>
                                 <button class="btn btn-outline-primary"
                                     onclick="copyRowLink('link-{{ $req->id }}', this)">
                                     Copy

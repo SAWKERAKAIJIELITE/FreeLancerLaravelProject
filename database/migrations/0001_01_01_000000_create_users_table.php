@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -24,20 +23,23 @@ return new class extends Migration
             $table->enum('language', ['English', 'French', 'Spanish'])->default('English');
 
             $table->enum('country_code', ['+1', '+44', '+52'])->default('+1');
-            $table->string('phone');
+            $table->string('phone', 20);
 
-            $table->enum('role', ['super_admin', 'educator', 'regular']);
-            $table->string('referral_code', 12)->unique();
-            // $table->unsignedBigInteger('referral_code')->unique();
-            // $table->primary('referral_code');
+            $table->enum('role', ['super_admin', 'educator', 'regular'])->index();
+
+            $table->string('referral_code')->unique();
             $table->foreignId('referred_by')->nullable()->constrained('users')->nullOnDelete();
+
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+
             $table->rememberToken();
 
-            // $table->boolean('terms_accepted');
+            $table->timestamp('terms_accepted_at')->nullable();
             $table->timestamps();
+
+            $table->index('referral_code');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

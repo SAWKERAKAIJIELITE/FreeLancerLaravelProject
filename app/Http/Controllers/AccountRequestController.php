@@ -2,11 +2,17 @@
 
 namespace App\Http\Controllers;
 
+// use App\Enums\Enums\SignupRequestStatus;
+use App\Exceptions\InvalidReferralCodeException;
+use App\Http\Requests\StoreAccountRequestRequest;
 use App\Models\AccountRequest;
 use App\Models\User;
+use App\Services\AccountRequestService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 
 class AccountRequestController extends Controller
 {
@@ -47,8 +53,7 @@ class AccountRequestController extends Controller
                     ->withErrors(['referral_input' => 'No user found with this code or username'])
                     ->withInput();
             }
-        }
-        else {
+        } else {
             $referralUser = User::where('role', 'super_admin')->first();
         }
 
@@ -58,5 +63,19 @@ class AccountRequestController extends Controller
         ]);
 
         return redirect('/email/verify')->with('success', 'Request submitted successfully!');
+    }
+
+    public function new_store(StoreAccountRequestRequest $request, AccountRequestService $service)
+    {
+        try {
+            $service->create($request->validated());
+
+            return view('auth.successful-signup');
+
+        } catch (InvalidReferralCodeException $exception) {
+            return redirect()
+                ->back()
+                ->withErrors($exception->getMessage());
+        }
     }
 }

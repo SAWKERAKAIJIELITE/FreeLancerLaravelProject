@@ -11,7 +11,7 @@ class EducatorController extends Controller
 {
     public function index(Request $request)
     {
-        $requests = $request->user()->accountRequests()
+        $requests = $request->user()->referrals()
             ->latest()
             ->paginate(10);
 

@@ -23,7 +23,7 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $remember)) {
             $user = Auth::user();
             return match ($user->role) {
-                'super_admin' => redirect('/admin/dashboard'),
+                'super_admin' => redirect('/admin/signup-requests'),
                 'educator' => redirect('/educator/dashboard'),
                 default => redirect('/user/dashboard'),
             };

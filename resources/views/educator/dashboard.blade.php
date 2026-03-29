@@ -37,7 +37,7 @@
 
                 <div class="input-group mt-2">
                     <input type="text" id="referralLink" class="form-control"
-                        value="{{ e(url('/signup?ref=' . Auth::user()->referral_code)) }}" readonly>
+                        value="{{ e(url('/register?ref=' . Auth::user()->referral_code)) }}" readonly>
 
                     <button class="btn btn-primary" type="button" onclick="copyToClipboard('referralLink', this)">
                         Copy Link
@@ -93,7 +93,7 @@
                     <td>{{ $req->username }}</td>
                     <td>{{ $req->email }}</td>
                     <td>{{ $req->country }}</td>
-                    <td>{{ $req->user()->first()?->referral_code ??'-'}}</td>
+                    <td>{{ $req->referral_code ??'-'}}</td>
                     <td>
                         @if ($req->status === 'accepted' && $req->user()->first())
                             <div class="input-group input-group-sm">

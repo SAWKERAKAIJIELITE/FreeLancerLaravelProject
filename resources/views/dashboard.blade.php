@@ -37,7 +37,7 @@
 
                 <div class="input-group mt-2">
                     <input type="text" id="referralLink" class="form-control"
-                        value="{{ e(url('/signup?ref=' . Auth::user()->referral_code)) }}" readonly>
+                        value="{{ e(url('/register?ref=' . Auth::user()->referral_code)) }}" readonly>
 
                     <button class="btn btn-primary" type="button" onclick="copyToClipboard('referralLink', this)">
                         Copy Link
@@ -75,7 +75,7 @@
         }
     </script>
 
-    <form method="GET" action="/admin/dashboard" class="row g-2 mb-4">
+    <form method="GET" action="/admin/signup-requests" class="row g-2 mb-4">
         @csrf
         <div class="col">
             <input name="username" placeholder="Username" class="form-control">
@@ -136,7 +136,7 @@
                         @if ($req->status === 'accepted' && $req->user()->first())
                             <div class="input-group input-group-sm">
                                 <input type="text" id="link-{{ $req->id }}" class="form-control"
-                                    value="{{ url('/signup?ref=' . $req->user()->first()->referral_code) }}" readonly>
+                                    value="{{ url('/register?ref=' . $req->user()->first()->referral_code) }}" readonly>
                                 <button class="btn btn-outline-primary"
                                     onclick="copyRowLink('link-{{ $req->id }}', this)">
                                     Copy
@@ -177,12 +177,12 @@
                     </td>
                     <td>
                         @if ($req->status == 'pending')
-                            <form method="POST" action="/admin/dashboard/{{ $req->id }}/approve"
+                            <form method="POST" action="/admin/signup-requests/{{ $req->id }}/approve"
                                 class="d-inline">
                                 @csrf
                                 <button class="btn btn-success btn-sm">Accept</button>
                             </form>
-                            <form method="POST" action="/admin/dashboard/{{ $req->id }}/reject" class="d-inline">
+                            <form method="POST" action="/admin/signup-requests/{{ $req->id }}/reject" class="d-inline">
                                 @csrf
                                 <button class="btn btn-danger btn-sm">Reject</button>
                             </form>

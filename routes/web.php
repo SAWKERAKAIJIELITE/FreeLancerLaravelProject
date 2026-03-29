@@ -13,6 +13,10 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/', function () {
+    return view('welcome');
+});
+
 Route::middleware('guest')->group(function () {
 
     Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])
@@ -28,9 +32,6 @@ Route::middleware('guest')->group(function () {
         ->name('password.update');
 });
 
-Route::get('/', function () {
-    return view('welcome');
-});
 Route::middleware('auth')->group(function () {
 
     Route::get('/email/verify', function () {
@@ -40,7 +41,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
         $request->fulfill();
         $user = User::find($request->id);
-        return redirect("/".($user->role=='educator'?'educator':'user')."/dashboard");
+        return redirect("/" . ($user->role == 'educator' ? 'educator' : 'user') . "/dashboard");
     })->middleware('signed')->name('verification.verify');
 
     Route::post('/email/verification-notification', function (Request $request) {
@@ -50,13 +51,8 @@ Route::middleware('auth')->group(function () {
 
 });
 
-Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth');
-
-Route::post('/signup', [AccountRequestController::class, 'store']);
-Route::get('/signup', [AccountRequestController::class, 'create'])->name('signup');
-
+// Route::post('/signup', [AccountRequestController::class, 'store']);
+// Route::get('/signup', [AccountRequestController::class, 'create'])->name('signup');
 
 // Route::get('/admin/signup/{token}', function ($token) {
 //     if ($token !== config('app.admin_signup_token')) {
@@ -68,9 +64,9 @@ Route::get('/signup', [AccountRequestController::class, 'create'])->name('signup
 Route::middleware(['auth', 'role:super_admin'])->group(function () {
     Route::get('/admin/signup', [AdminAuthController::class, 'showSignupForm'])->name('admin.signup');
     Route::post('/admin/signup', [AdminAuthController::class, 'signup']);
-    Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
-    Route::post('/admin/dashboard/{id}/approve', [AdminController::class, 'approve']);
-    Route::post('/admin/dashboard/{id}/reject', [AdminController::class, 'reject']);
+    // Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+    // Route::post('/admin/dashboard/{id}/approve', [AdminController::class, 'approve']);
+    // Route::post('/admin/dashboard/{id}/reject', [AdminController::class, 'reject']);
 });
 
 Route::middleware(['auth', 'role:educator', 'verified'])->group(function () {
@@ -80,3 +76,8 @@ Route::middleware(['auth', 'role:educator', 'verified'])->group(function () {
 Route::middleware(['auth', 'role:regular', 'verified'])->group(function () {
     Route::get('/user/dashboard', [UserController::class, 'index']);
 });
+
+
+require __DIR__ . '/auth.php';
+require __DIR__ . '/admin.php';
+// require __DIR__ . '/user.php';

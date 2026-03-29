@@ -14,6 +14,9 @@ class User extends Authenticatable implements MustVerifyEmail
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    public const ROLE_ADMIN = 'super_admin';
+    public const ROLE_USER = 'regular';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -32,8 +35,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'country',
         'language',
         'country_code',
-        'terms_accepted',
         'phone',
+        'terms_accepted_at',
+        'referral_code'
     ];
 
     /**
@@ -55,30 +59,39 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
+            'terms_accepted_at' => 'datetime',
+            'birthdate' => 'date',
             'password' => 'hashed',
         ];
     }
 
-    protected static function booted(){
-        static::creating(function ($user) {
-            $user->referral_code = self::generateUniqueReferralCode();
-        });
-    }
-
-    public static function generateUniqueReferralCode(): string
+    public function isAdmin(): bool
     {
-        do {
-            $code = strtoupper(Str::random(10));
-        } while (self::where('referral_code', $code)->exists());
-
-        return $code;
+        return $this->role === self::ROLE_ADMIN;
     }
 
+    // public function isUser(): bool
+    // {
+    //     return $this->role === self::ROLE_USER;
+    // }
+
+    public function getFullNameAttribute(): string
+    {
+        return trim("{$this->first_name} {$this->middle_name} {$this->last_name}");
+    }
+
+    public function scopeByReferralCode($query, string $code)
+    {
+        return $query->where('referral_code', $code);
+    }
+
+    // Users referred by this user
     public function referrals()
     {
         return $this->hasMany(User::class, 'referred_by');
     }
 
+    // Who referred this user
     public function referrer()
     {
         return $this->belongsTo(User::class, 'referred_by');
@@ -88,8 +101,9 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(AccountRequest::class, 'referral_id');
     }
-    // public function accountRequest()
-    // {
-    //     return $this->hasOne(AccountRequest::class,'user_id');
-    // }
+
+    public function reviews()
+    {
+        return $this->hasMany(AccountRequest::class, 'reviewed_by');
+    }
 }
