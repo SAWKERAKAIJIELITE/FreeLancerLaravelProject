@@ -5,6 +5,9 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\Rule;
+use App\Models\Country;
+use App\Models\Language;
 
 class StoreAccountRequestRequest extends FormRequest
 {
@@ -28,11 +31,24 @@ class StoreAccountRequestRequest extends FormRequest
             'middle_name' => 'nullable|string|min:2|max:100|regex:/^[\pL\s\.\,\-\']+$/u',
             'last_name' => 'required|string|min:2|max:100|regex:/^[\pL\s\.\,\-\']+$/u',
             'birthdate' => 'required|date|before:today',
-            'country' => 'required|in:USA,Canada,Mexico',
-            'language' => 'required|in:English,French,Spanish',
-            'country_code' => 'required|in:+1,+44,+52',
-            'phone' => 'required|string|numeric|min:6,max:20',
-            'email' => 'required|string|max:255|unique:account_requests,email|unique:users,email',
+            // 'country' => 'required|in:USA,Canada,Mexico',
+            'country_id' => [
+                'required',
+                'integer',
+                Rule::exists('countries', 'id')->where('is_active', true),
+            ],
+            'language_id' => [
+                'required',
+                'integer',
+                Rule::exists('languages', 'id')->where('is_active', true),
+            ],
+            'phone_country_id' => [
+                'required',
+                'integer',
+                Rule::exists('countries', 'id')->where('is_active', true),
+            ],
+            'phone' => 'required|string|numeric|min:6,max:30',
+            'email' => 'required|string|max:255|email|unique:account_requests,email|unique:users,email',
             'username' => 'required|alpha_num|min:3|max:50|unique:account_requests,username|unique:users,username',
             'password' => [
                 'required',
@@ -46,7 +62,7 @@ class StoreAccountRequestRequest extends FormRequest
             ],
             'terms_accepted' => 'required|accepted',
             'role' => 'required|in:educator,regular',
-            'referral_input'=>'nullable',
+            'referral_input' => 'nullable',
         ];
     }
 

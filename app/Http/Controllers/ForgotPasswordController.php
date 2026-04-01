@@ -17,8 +17,6 @@ class ForgotPasswordController extends Controller
         $request->validate([
             'email' => ['required', 'email', 'exists:users,email'],
         ]);
-        if($request->validated()['email']==null)
-            return redirect()->back()->withErrors(['email'=>'no user has this email']);
 
         $status = Password::sendResetLink(
             $request->only('email')

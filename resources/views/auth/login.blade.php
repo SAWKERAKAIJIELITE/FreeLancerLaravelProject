@@ -52,7 +52,7 @@
             <a href="{{ route('password.request') }}">Forgot your password?</a>
         </div>
         <div class="text-center mt-3">
-            <a href="/signup">Create Account</a>
+            <a href="/register">Create Account</a>
         </div>
 
         @if ($errors->any())

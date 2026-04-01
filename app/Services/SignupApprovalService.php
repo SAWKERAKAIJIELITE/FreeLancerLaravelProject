@@ -2,8 +2,6 @@
 
 namespace App\Services;
 
-// use App\Enums\SignupRequestStatus;
-use App\Exceptions\InvalidReferralCodeException;
 use App\Exceptions\SignupRequestAlreadyProcessedException;
 use App\Models\AccountRequest;
 use App\Models\User;
@@ -22,8 +20,7 @@ class SignupApprovalService
     {
         $this->ensureReviewerIsAdmin($reviewer);
 
-        // dd($accountRequest->status);
-        if ($accountRequest->status!='pending') {
+        if ($accountRequest->status != 'pending') {
             throw new SignupRequestAlreadyProcessedException();
         }
 
@@ -36,7 +33,7 @@ class SignupApprovalService
                 'rejection_reason' => null,
                 'reviewed_by' => $reviewer->id,
                 'approved_at' => now(),
-                'user_id'=> $user->id
+                'user_id' => $user->id,
             ]);
 
             event(new Registered($user));
@@ -71,12 +68,12 @@ class SignupApprovalService
     {
         return [
             'first_name' => $accountRequest->first_name,
-            'middle_name' => $accountRequest->middle_name??null,
+            'middle_name' => $accountRequest->middle_name ?? null,
             'last_name' => $accountRequest->last_name,
             'birthdate' => $accountRequest->birthdate,
-            'country' => $accountRequest->country,
-            'language' => $accountRequest->language,
-            'country_code' => $accountRequest->country_code,
+            'country_id' => $accountRequest->country_id,
+            'language_id' => $accountRequest->language_id,
+            'phone_country_id' => $accountRequest->phone_country_id,
             'phone' => $accountRequest->phone,
             'email' => $accountRequest->email,
             'username' => $accountRequest->username,
@@ -93,20 +90,5 @@ class SignupApprovalService
         if (!$reviewer->isAdmin()) {
             throw new AuthorizationException('Only admins can review signup requests.');
         }
-    }
-
-    private function resolveReferrer(?string $referralCode): ?User
-    {
-        if (blank($referralCode)) {
-            return null;
-        }
-
-        $referrer = User::where('referral_code', $referralCode)->first();
-
-        if (!$referrer) {
-            throw new InvalidReferralCodeException();
-        }
-
-        return $referrer;
     }
 }

@@ -37,8 +37,10 @@
 
                 <div class="input-group mt-2">
                     <input type="text" id="referralLink" class="form-control"
-                        value="{{ e(url('/signup?ref=' . Auth::user()->referral_code)) }}" readonly>
-
+                        value="{{ e(url('/register?ref=' . Auth::user()->referral_code)) }}" readonly>
+                    <a href="{{ e(url('/register?ref=' . Auth::user()->referral_code)) }}" target="_blank"
+                        rel="noopener noreferrer" class="btn btn-outline-primary">
+                        Open Link</a>
                     <button class="btn btn-primary" type="button" onclick="copyToClipboard('referralLink', this)">
                         Copy Link
                     </button>
@@ -48,71 +50,27 @@
         </div>
     </div>
 
-
-
     <table class="table table-bordered align-middle">
         <thead class="table-light">
             <tr>
-                {{-- <th>Name</th> --}}
                 <th>Username</th>
                 <th>Email</th>
                 <th>Country</th>
                 <th>Referral Code</th>
-                <th>Referral Link</th>
-                {{-- <th>Status</th> --}}
+                {{-- <th>Referral Link</th> --}}
+                <th>Reviewed Date</th>
+                <th>Created Date</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($requests as $req)
                 <tr>
-                    {{-- <td>{{ $req->first_name }} {{ $req->last_name }}</td> --}}
                     <td>{{ $req->username }}</td>
                     <td>{{ $req->email }}</td>
-                    <td>{{ $req->country }}</td>
-                    <td>{{ $req->referral_code ?? '-' }}</td>
-                    <td>
-                        @if ($req->status === 'accepted' && $req->user()->first())
-                            <div class="input-group input-group-sm">
-                                <input type="text" id="link-{{ $req->id }}" class="form-control"
-                                    value="{{ url('/register?ref=' . $req->user()->first()->referral_code) }}" readonly>
-                                <button class="btn btn-outline-primary"
-                                    onclick="copyRowLink('link-{{ $req->id }}', this)">
-                                    Copy
-                                </button>
-                            </div>
-                        @else
-                            -
-                        @endif
-                    </td>
-                    <script>
-                        function copyRowLink(elementId, button) {
-                            const input = document.getElementById(elementId);
-
-                            input.select();
-                            input.setSelectionRange(0, 99999);
-
-                            navigator.clipboard.writeText(input.value).then(() => {
-                                const original = button.innerText;
-
-                                button.innerText = 'Copied ✔️';
-                                button.classList.remove('btn-outline-primary');
-                                button.classList.add('btn-success');
-
-                                setTimeout(() => {
-                                    button.innerText = original;
-                                    button.classList.remove('btn-success');
-                                    button.classList.add('btn-outline-primary');
-                                }, 1200);
-                            });
-                        }
-                    </script>
-                    {{-- <td>
-                        <span
-                            class="badge bg-{{ $req->status == 'pending' ? 'warning' : ($req->status == 'accepted' ? 'success' : 'danger') }}
-                            text-dark">
-                            {{ ucfirst($req->status) }}
-                        </span>
-                    </td> --}}
+                    <td>{{ $req->country->name }}</td>
+                    <td>{{ $req->referral_code }}</td>
+                    <td>{{ $req->approved_at?->format('Y-m-d') ?? ($req->rejected_at?->format('Y-m-d') ?? '-') }}</td>
+                    <td>{{ $req->created_at->format('Y-m-d') }}</td>
                 </tr>
             @endforeach
         </tbody>
@@ -126,7 +84,7 @@
         @csrf
         <button class="btn btn-secondary mt-3">Logout</button>
     </form>
-<script>
+    <script>
         function copyToClipboard(elementId, button) {
             const input = document.getElementById(elementId);
 

@@ -61,13 +61,13 @@ Route::middleware('auth')->group(function () {
 //     return view('auth.admin-signup');
 // });
 
-Route::middleware(['auth', 'role:super_admin'])->group(function () {
-    Route::get('/admin/signup', [AdminAuthController::class, 'showSignupForm'])->name('admin.signup');
-    Route::post('/admin/signup', [AdminAuthController::class, 'signup']);
-    // Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
-    // Route::post('/admin/dashboard/{id}/approve', [AdminController::class, 'approve']);
-    // Route::post('/admin/dashboard/{id}/reject', [AdminController::class, 'reject']);
-});
+// Route::middleware(['auth', 'role:super_admin'])->group(function () {
+//     Route::get('/admin/signup', [AdminAuthController::class, 'showSignupForm'])->name('admin.signup');
+//     Route::post('/admin/signup', [AdminAuthController::class, 'signup']);
+//     // Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+//     // Route::post('/admin/dashboard/{id}/approve', [AdminController::class, 'approve']);
+//     // Route::post('/admin/dashboard/{id}/reject', [AdminController::class, 'reject']);
+// });
 
 Route::middleware(['auth', 'role:educator', 'verified'])->group(function () {
     Route::get('/educator/dashboard', [EducatorController::class, 'index']);
@@ -77,7 +77,7 @@ Route::middleware(['auth', 'role:regular', 'verified'])->group(function () {
     Route::get('/user/dashboard', [UserController::class, 'index']);
 });
 
-
+require __DIR__ . '/metadata.php';
 require __DIR__ . '/auth.php';
 require __DIR__ . '/admin.php';
 // require __DIR__ . '/user.php';

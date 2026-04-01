@@ -16,9 +16,9 @@ class AccountRequest extends Model
         'middle_name',
         'last_name',
         'birthdate',
-        'country',
-        'language',
-        'country_code',
+        'country_id',
+        'language_id',
+        'phone_country_id',
         'terms_accepted_at',
         'phone',
         'email',
@@ -51,14 +51,27 @@ class AccountRequest extends Model
             'birthdate' => 'date',
             'password' => 'hashed',
             'status' => 'string',
-             // 'status'=> SignupRequestStatus::class
-            // 'status'=> SignupRequestStatus::class
         ];
     }
 
     public function getFullNameAttribute(): string
     {
         return trim("{$this->first_name} {$this->middle_name} {$this->last_name}");
+    }
+
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
+    }
+
+    public function language()
+    {
+        return $this->belongsTo(Language::class);
+    }
+
+    public function phoneCountry()
+    {
+        return $this->belongsTo(Country::class, 'phone_country_id');
     }
 
     // public function scopePending($query)

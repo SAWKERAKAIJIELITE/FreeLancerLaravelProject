@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 
@@ -19,4 +20,6 @@ Route::middleware(['auth', 'role:super_admin'])
 
                 Route::post('/{id}/reject', 'new_reject')->name('reject');
             });
+        Route::get('/signup', [AdminAuthController::class, 'showSignupForm'])->name('admin.signup');
+        Route::post('/signup', [AdminAuthController::class, 'signup']);
     });

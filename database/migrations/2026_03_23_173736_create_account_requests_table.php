@@ -18,13 +18,13 @@ return new class extends Migration {
             $table->string('middle_name')->nullable();
             $table->string('last_name');
 
-            $table->enum('country', ['USA', 'Canada', 'Mexico'])->default('USA');
-            $table->enum('language', ['English', 'French', 'Spanish'])->default('English');
+            $table->foreignId('country_id')->constrained()->restrictOnDelete();
+            $table->foreignId('language_id')->constrained()->restrictOnDelete();
+            $table->foreignId('phone_country_id')->constrained('countries')->restrictOnDelete();
+
+            $table->string('phone',30);
 
             $table->date('birthdate');
-
-            $table->enum('country_code', ['+1', '+44', '+52'])->default('+1');
-            $table->string('phone',20);
 
             $table->string('email')->unique();
             $table->string('password');

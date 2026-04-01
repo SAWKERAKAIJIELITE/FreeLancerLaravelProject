@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-// use App\Enums\Enums\SignupRequestStatus;
+use App\Models\Country;
 use App\Exceptions\InvalidReferralCodeException;
+use App\Exceptions\RolesDoesnotFollowRulesException;
 use App\Http\Requests\StoreAccountRequestRequest;
 use App\Models\AccountRequest;
 use App\Models\User;
@@ -20,7 +21,11 @@ class AccountRequestController extends Controller
     {
         $referralCode = $request->query('ref');
 
-        return view('auth.signup', compact('referralCode'));
+        $referrer = User::where('referral_code', $referralCode)
+            ->orWhere('username', $referralCode)->first();
+        $referrer_role = $referrer?->role;
+
+        return view('auth.signup', compact('referralCode', 'referrer_role'));
     }
 
     public function store(Request $request)
@@ -68,11 +73,12 @@ class AccountRequestController extends Controller
     public function new_store(StoreAccountRequestRequest $request, AccountRequestService $service)
     {
         try {
-            $service->create($request->validated());
+            $referrer = Auth::user();
+            $service->create($request->validated(), $referrer);
 
             return view('auth.successful-signup');
 
-        } catch (InvalidReferralCodeException $exception) {
+        } catch (InvalidReferralCodeException | RolesDoesnotFollowRulesException $exception) {
             return redirect()
                 ->back()
                 ->withErrors($exception->getMessage());

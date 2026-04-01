@@ -16,6 +16,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public const ROLE_ADMIN = 'super_admin';
     public const ROLE_USER = 'regular';
+    public const ROLE_EDUCATOR = 'educator';
 
     /**
      * The attributes that are mass assignable.
@@ -32,12 +33,12 @@ class User extends Authenticatable implements MustVerifyEmail
         'role',
         'referred_by',
         'birthdate',
-        'country',
-        'language',
-        'country_code',
+        'country_id',
+        'language_id',
+        'phone_country_id',
         'phone',
         'terms_accepted_at',
-        'referral_code'
+        'referral_code',
     ];
 
     /**
@@ -70,10 +71,15 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->role === self::ROLE_ADMIN;
     }
 
-    // public function isUser(): bool
-    // {
-    //     return $this->role === self::ROLE_USER;
-    // }
+    public function isUser(): bool
+    {
+        return $this->role === self::ROLE_USER;
+    }
+
+    public function isEducator(): bool
+    {
+        return $this->role === self::ROLE_EDUCATOR;
+    }
 
     public function getFullNameAttribute(): string
     {
@@ -83,6 +89,21 @@ class User extends Authenticatable implements MustVerifyEmail
     public function scopeByReferralCode($query, string $code)
     {
         return $query->where('referral_code', $code);
+    }
+
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
+    }
+
+    public function language()
+    {
+        return $this->belongsTo(Language::class);
+    }
+
+    public function phoneCountry()
+    {
+        return $this->belongsTo(Country::class, 'phone_country_id');
     }
 
     // Users referred by this user

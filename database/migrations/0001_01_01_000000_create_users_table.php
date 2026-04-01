@@ -19,11 +19,10 @@ return new class extends Migration {
 
             $table->date('birthdate');
 
-            $table->enum('country', ['USA', 'Canada', 'Mexico'])->default('USA');
-            $table->enum('language', ['English', 'French', 'Spanish'])->default('English');
-
-            $table->enum('country_code', ['+1', '+44', '+52'])->default('+1');
-            $table->string('phone', 20);
+            $table->foreignId('country_id')->constrained()->restrictOnDelete();
+            $table->foreignId('language_id')->constrained()->restrictOnDelete();
+            $table->foreignId('phone_country_id')->constrained('countries')->restrictOnDelete();
+            $table->string('phone', 30);
 
             $table->enum('role', ['super_admin', 'educator', 'regular'])->index();
 

@@ -6,9 +6,15 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
-<body class="container mt-4">
+<body class="container mt-4" style="max-width: max-content;">
 
-    <h2 class="mb-4">Admin Dashboard</h2>
+    <h2 class="mb-4">{{ Auth::user()->username }} Admin Dashboard</h2>
+    <form method="GET" action="/admin/signup" target="_blank" rel="noopener noreferrer" class="row g-2 mb-4">
+        @csrf
+        <button class="btn btn-primary">
+            add another admin
+        </button>
+    </form>
 
     <div class="card shadow-sm mb-4">
         <div class="card-body">
@@ -38,6 +44,9 @@
                 <div class="input-group mt-2">
                     <input type="text" id="referralLink" class="form-control"
                         value="{{ e(url('/register?ref=' . Auth::user()->referral_code)) }}" readonly>
+                    <a href="{{ e(url('/register?ref=' . Auth::user()->referral_code)) }}" target="_blank"
+                        rel="noopener noreferrer" class="btn btn-outline-primary">
+                        Open Link</a>
 
                     <button class="btn btn-primary" type="button" onclick="copyToClipboard('referralLink', this)">
                         Copy Link
@@ -78,22 +87,33 @@
     <form method="GET" action="/admin/signup-requests" class="row g-2 mb-4">
         @csrf
         <div class="col">
+            <label class="form-label">Username</label>
             <input name="username" placeholder="Username" class="form-control">
         </div>
         <div class="col">
+            <label class="form-label">Email</label>
             <input name="email" placeholder="Email" class="form-control">
         </div>
         <div class="col">
-            <input name="country" placeholder="Country" class="form-control">
+            <label class="form-label" for="country_id">Country</label>
+            <select name="country_id" id="country_id" data-url="{{ route('metadata.countries') }}"
+                data-selected="{{ old('country_id') }}" class="form-select">
+                <option value="">Select country</option>
+            </select>
+            @error('country_id')
+                {{-- <div class="invalid-feedback">{{ $errors }}</div> --}}
+            @enderror
         </div>
         <div class="col">
-            <input type="date" name="birthdate" class="form-control">
+            <label class="form-label">Revision date</label>
+            <input type="date" name="reviewed_at" placeholder="Revision date" class="form-control">
         </div>
-        <div class="col">
+        <div class="col-md-2">
+            <label class="form-label">Ref. Code or Username</label>
             <input name="referral_code" placeholder="Referral Code or Username" class="form-control">
         </div>
         <div class="col">
-            {{-- <label>status</label> --}}
+            <label class="form-label">Status</label>
             <select name="status" class="form-control" label="status">
                 <option value="pending">pending</option>
                 <option value="accepted">accepted</option>
@@ -102,16 +122,57 @@
             </select>
         </div>
 
-        <div class="col">
+        <div class="col-md-1 d-flex align-items-end">
             <button class="btn btn-primary">Filter</button>
         </div>
     </form>
+    @php
+        $oldCountryId = old('country_id');
+    @endphp
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const countrySelect = document.getElementById('country_id');
 
-    <table class="table table-bordered align-middle">
+            const oldCountryId = @json($oldCountryId);
+
+            try {
+                const [countriesResponse] = await Promise.all([
+                    fetch(@json(route('metadata.countries'))),
+                ]);
+
+                if (!countriesResponse.ok) {
+                    throw new Error('Failed to load metadata.');
+                }
+
+                const countriesPayload = await countriesResponse.json();
+
+                populateCountryOptions(countrySelect, countriesPayload.data, oldCountryId);
+
+            } catch (error) {
+                console.error(error);
+            }
+        });
+
+        function populateCountryOptions(select, countries, selectedValue = null) {
+            countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country.id;
+                option.textContent = `${country.flag_emoji ?? ''} ${country.name}`.trim();
+
+                if (String(selectedValue) === String(country.id)) {
+                    option.selected = true;
+                }
+
+                select.appendChild(option);
+            });
+        }
+    </script>
+    <table class="table table-bordered align-middle" style="width: fixed;">
         <thead class="table-light">
             <tr>
                 {{-- <th>Name</th> --}}
                 <th>Username</th>
+                <th>Role</th>
                 <th>Referred By</th>
                 <th>Email</th>
                 <th>Country</th>
@@ -120,6 +181,8 @@
                 <th>Referral Link</th>
                 <th>Status</th>
                 <th>Actions</th>
+                <th>Reviewed Date</th>
+                <th>Created Date</th>
             </tr>
         </thead>
         <tbody>
@@ -127,16 +190,29 @@
                 <tr>
                     {{-- <td>{{ $req->first_name }} {{ $req->last_name }}</td> --}}
                     <td>{{ $req->username }}</td>
-                    <td>{{ $req->referral()->first()->username }}</td>
+                    <td>{{ $req->role }}</td>
+                    <td class="bg-{{ $req->referral()->first() == null ? 'warning' : '' }}">
+                        <table>
+                            <tr>
+                                <td>
+                                    {{ $req->referral()->first()?->username ?? 'NOT REFERRED' }}/
+                                </td>
+                                <td>
+                                    {{ $req->referral()->first()?->role ?? 'NO Role' }}
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
                     <td>{{ $req->email }}</td>
-                    <td>{{ $req->country }}</td>
+                    <td>{{ $req->country->name }}</td>
                     {{-- <td>{{ $req->referral()->first()->referral_code }}</td> --}}
                     <td>{{ $req->user()->first()?->referral_code ?? '-' }}</td>
                     <td>
                         @if ($req->status === 'accepted' && $req->user()->first())
                             <div class="input-group input-group-sm">
                                 <input type="text" id="link-{{ $req->id }}" class="form-control"
-                                    value="{{ url('/register?ref=' . $req->user()->first()->referral_code) }}" readonly>
+                                    value="{{ url('/register?ref=' . $req->user()->first()->referral_code) }}"
+                                    readonly>
                                 <button class="btn btn-outline-primary"
                                     onclick="copyRowLink('link-{{ $req->id }}', this)">
                                     Copy
@@ -182,12 +258,15 @@
                                 @csrf
                                 <button class="btn btn-success btn-sm">Accept</button>
                             </form>
-                            <form method="POST" action="/admin/signup-requests/{{ $req->id }}/reject" class="d-inline">
+                            <form method="POST" action="/admin/signup-requests/{{ $req->id }}/reject"
+                                class="d-inline">
                                 @csrf
                                 <button class="btn btn-danger btn-sm">Reject</button>
                             </form>
                         @endif
                     </td>
+                    <td>{{ $req->approved_at?->format('Y-m-d') ?? ($req->rejected_at?->format('Y-m-d') ?? '-') }}</td>
+                    <td>{{ $req->created_at->format('Y-m-d') }}</td>
                 </tr>
             @endforeach
         </tbody>

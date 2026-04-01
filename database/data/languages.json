@@ -1,0 +1,170 @@
+[
+    {
+        "name": "English",
+        "native_name": "English",
+        "code": "en",
+        "sort_order": 100
+    },
+    {
+        "name": "Romanian",
+        "native_name": "Română",
+        "code": "ro",
+        "sort_order": 90
+    },
+    {
+        "name": "Arabic",
+        "native_name": "العربية",
+        "code": "ar",
+        "sort_order": 80
+    },
+    {
+        "name": "French",
+        "native_name": "Français",
+        "code": "fr",
+        "sort_order": 80
+    },
+    {
+        "name": "German",
+        "native_name": "Deutsch",
+        "code": "de",
+        "sort_order": 80
+    },
+    {
+        "name": "Spanish",
+        "native_name": "Español",
+        "code": "es",
+        "sort_order": 80
+    },
+    {
+        "name": "Italian",
+        "native_name": "Italiano",
+        "code": "it",
+        "sort_order": 70
+    },
+    {
+        "name": "Portuguese",
+        "native_name": "Português",
+        "code": "pt",
+        "sort_order": 70
+    },
+    {
+        "name": "Russian",
+        "native_name": "Русский",
+        "code": "ru",
+        "sort_order": 70
+    },
+    {
+        "name": "Chinese",
+        "native_name": "中文",
+        "code": "zh",
+        "sort_order": 90
+    },
+    {
+        "name": "Japanese",
+        "native_name": "日本語",
+        "code": "ja",
+        "sort_order": 70
+    },
+    {
+        "name": "Korean",
+        "native_name": "한국어",
+        "code": "ko",
+        "sort_order": 70
+    },
+    {
+        "name": "Hindi",
+        "native_name": "हिन्दी",
+        "code": "hi",
+        "sort_order": 70
+    },
+    {
+        "name": "Turkish",
+        "native_name": "Türkçe",
+        "code": "tr",
+        "sort_order": 70
+    },
+    {
+        "name": "Dutch",
+        "native_name": "Nederlands",
+        "code": "nl",
+        "sort_order": 70
+    },
+    {
+        "name": "Swedish",
+        "native_name": "Svenska",
+        "code": "sv",
+        "sort_order": 0
+    },
+    {
+        "name": "Norwegian",
+        "native_name": "Norsk",
+        "code": "no",
+        "sort_order": 0
+    },
+    {
+        "name": "Finnish",
+        "native_name": "Suomi",
+        "code": "fi",
+        "sort_order": 0
+    },
+    {
+        "name": "Danish",
+        "native_name": "Dansk",
+        "code": "da",
+        "sort_order": 0
+    },
+    {
+        "name": "Polish",
+        "native_name": "Polski",
+        "code": "pl",
+        "sort_order": 0
+    },
+    {
+        "name": "Czech",
+        "native_name": "Čeština",
+        "code": "cs",
+        "sort_order": 0
+    },
+    {
+        "name": "Hungarian",
+        "native_name": "Magyar",
+        "code": "hu",
+        "sort_order": 0
+    },
+    {
+        "name": "Greek",
+        "native_name": "Ελληνικά",
+        "code": "el",
+        "sort_order": 0
+    },
+    {
+        "name": "Hebrew",
+        "native_name": "עברית",
+        "code": "he",
+        "sort_order": 0
+    },
+    {
+        "name": "Thai",
+        "native_name": "ไทย",
+        "code": "th",
+        "sort_order": 0
+    },
+    {
+        "name": "Vietnamese",
+        "native_name": "Tiếng Việt",
+        "code": "vi",
+        "sort_order": 0
+    },
+    {
+        "name": "Indonesian",
+        "native_name": "Bahasa Indonesia",
+        "code": "id",
+        "sort_order": 0
+    },
+    {
+        "name": "Malay",
+        "native_name": "Bahasa Melayu",
+        "code": "ms",
+        "sort_order": 0
+    }
+]

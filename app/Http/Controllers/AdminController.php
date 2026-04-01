@@ -28,15 +28,16 @@ class AdminController extends Controller
             $query->where('email', 'like', "%{$request->email}%");
         }
 
-        if ($request->country) {
-            $query->where('country', $request->country);
+        if ($request->country_id) {
+            $query->where('country_id', $request->country_id);
         }
         if ($request->status) {
             $query->where('status', $request->status);
         }
 
-        if ($request->birthdate) {
-            $query->whereDate('birthdate', $request->birthdate);
+        if ($request->reviewed_at) {
+            $query->whereDate('approved_at', $request->reviewed_at)
+            ->orWhereDate('rejected_at', $request->reviewed_at);
         }
 
         if ($request->referral_code) {
