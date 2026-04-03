@@ -8,11 +8,9 @@ use App\Models\AccountRequest;
 use App\Models\User;
 use App\Services\SignupApprovalService;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -51,46 +49,11 @@ class AdminController extends Controller
         return view('dashboard', compact('requests'));
     }
 
-    public function approve($id)
-    {
-        $request = AccountRequest::findOrFail($id);
-
-        DB::transaction(function () use ($request) {
-
-            $user = User::create([
-                'username' => $request->username,
-                'first_name' => $request->first_name,
-                'middle_name' => $request->middle_name ?? null,
-                'last_name' => $request->last_name,
-                'birthdate' => $request->birthdate,
-                'country' => $request->country,
-                'language' => $request->language,
-                'phone' => $request->phone,
-                'email' => $request->email,
-                'password' => $request->password,
-                'role' => $request->role,
-                'referred_by' => $request->referral_id,
-            ]);
-
-            $request->update([
-                'status' => 'accepted',
-                'approved_at' => now(),
-                'user_id' => $user->id,
-            ]);
-
-            // TODO: send email here
-            event(new Registered($user));
-        });
-
-        return back()->with('success', 'Approved');
-    }
-
     public function new_approve($id, SignupApprovalService $service): RedirectResponse
     {
         $accountRequest = AccountRequest::findOrFail($id);
 
         $this->authorize('review', $accountRequest);
-        // dd($accountRequest->status);
         try {
             $service->approve($accountRequest, Auth::user());
 
@@ -102,18 +65,6 @@ class AdminController extends Controller
                 ->back()
                 ->with('error', $exception->getMessage());
         }
-    }
-
-    public function reject($id)
-    {
-        $request = AccountRequest::findOrFail($id);
-
-        $request->update([
-            'status' => 'rejected',
-            'rejected_at' => now(),
-        ]);
-
-        return back()->with('success', 'Rejected');
     }
 
     public function new_reject(

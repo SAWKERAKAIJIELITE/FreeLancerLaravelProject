@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AccountRequest;
 use App\Models\User;
 use App\Services\ReferralCodeGenerator;
 use Illuminate\Http\Request;

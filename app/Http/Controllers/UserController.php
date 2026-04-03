@@ -11,9 +11,6 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        // $requests = User::where('referred_by', Auth::id())
-        //     ->latest()
-        //     ->paginate(10);
         $requests = $request->user()->referrals()
             ->latest()
             ->paginate(10);
