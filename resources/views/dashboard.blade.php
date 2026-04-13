@@ -344,7 +344,7 @@
                                                 data-bs-dismiss="modal"></button>
                                         </div>
 
-                                        <form id="rejectForm" method="POST">
+                                        <form id="rejectForm" method="POST" action="signup-requests/{{ $req->id }}/reject">
                                             @csrf
 
                                             <div class="modal-body">

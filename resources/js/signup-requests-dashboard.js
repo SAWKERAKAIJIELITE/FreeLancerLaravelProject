@@ -21,9 +21,13 @@ function renderActions(event)
                 <button class="btn btn-success btn-sm">Accept</button>
             </form>
 
-            <button type="button" class="btn btn-danger btn-sm open-reject-modal-btn"
+            <button
+                type="button"
+                class="btn btn-danger btn-sm open-reject-modal-btn"
                 data-bs-toggle="modal" data-bs-target="#rejectModal"
-                data-request-id="${event.id}" data-user-name="${event.username}">
+                data-request-id="${event.id}"
+                data-user-name="${escapeHtml(event.username ?? '-')}"
+            >
                 Reject
             </button>
             <div class="modal fade" id="rejectModal" tabindex="-1"
@@ -35,8 +39,8 @@ function renderActions(event)
                                 <button type="button" class="btn-close"
                                     data-bs-dismiss="modal"></button>
                         </div>
-
-                        <form id="rejectForm" method="POST" value="${window.csrfToken}">
+                        <form id="rejectForm" method="POST" action="/signup-requests/${event.id}/reject">
+                        <input type="hidden" name="_token" value="${window.csrfToken}">
                             <div class="modal-body">
                                 <div class="mb-3">
                                     <div class="fw-semibold" id="reject-user-name">-</div>
@@ -156,7 +160,7 @@ function renderStatusCell(event)
 function updateReviewedRow(event)
 {
     const row = document.getElementById(`signup-request-row-${event.id}`);
-    console.log(`Ensuring row for event ID ${event.id}:`, row);
+    console.log(`updating row for event ID ${event.id}:`, row);
     if (!row) return;
 
     const statusCell = row.querySelector('.request-status');
@@ -232,7 +236,7 @@ function bindRejectModal()
     const modal = document.getElementById('rejectModal');
     const form = document.getElementById('rejectForm');
 
-    if (!modal || modal.dataset.bound === '1') return;
+    if (!modal || !form || modal.dataset.bound === '1') return;
     modal.dataset.bound = '1';
 
     modal.addEventListener('show.bs.modal', function (event)
@@ -247,13 +251,16 @@ function bindRejectModal()
         const fullName = button.getAttribute('data-user-name');
 
         // Set form action dynamically
-        form.action = `/signup-requests/${requestId}/reject`;
+        // form.action = `/signup-requests/${requestId}/reject`;
 
         // Fill UI
         document.getElementById('reject-user-name').textContent = fullName || '-';
 
         // Reset textarea
         document.getElementById('reject-reason-input').value = '';
+
+        // const modal = new bootstrap.Modal(modal);
+        // modal.show();
 
         const textarea = document.getElementById('reject-reason-input');
 
@@ -280,6 +287,7 @@ document.addEventListener('DOMContentLoaded', () =>
 {
     bindRejectionReasonModal();
     bindRejectModal();
+    // console.log(window.csrfToken)
 
     if (!window.Echo)
     {
