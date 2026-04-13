@@ -8,13 +8,7 @@
 
 <body class="container mt-4" style="max-width: max-content;">
 
-    <h2 class="mb-4">{{ Auth::user()->username }} Admin Dashboard</h2>
-    <form method="GET" action="/admin/signup" target="_blank" rel="noopener noreferrer" class="row g-2 mb-4">
-        @csrf
-        <button class="btn btn-primary">
-            add another admin
-        </button>
-    </form>
+    <h2 class="mb-4">{{ Auth::user()->username }} Networker Dashboard</h2>
 
     <div class="card shadow-sm mb-4">
         <div class="card-body">
@@ -37,10 +31,6 @@
                 <a href="{{ e(url('/add-networker?ref=' . Auth::user()->referral_code)) }}" target="_blank"
                     rel="noopener noreferrer" class="btn btn-outline-primary">
                     add networker
-                </a>
-                <a href="{{ e(url('/add-educator?ref=' . Auth::user()->referral_code)) }}" target="_blank"
-                    rel="noopener noreferrer" class="btn btn-outline-primary">
-                    add educator
                 </a>
                 <a href="{{ e(url('/add-regular?ref=' . Auth::user()->referral_code)) }}" target="_blank"
                     rel="noopener noreferrer" class="btn btn-outline-primary">
@@ -192,12 +182,12 @@
                 {{-- <th>Name</th> --}}
                 <th>Username</th>
                 <th>Role</th>
-                <th>Referred By</th>
-                <th>Referred By (Role)</th>
+                {{-- <th>Referred By</th>
+                <th>Referred By (Role)</th> --}}
                 {{-- <th>Email</th> --}}
                 <th>Country</th>
                 {{-- <th>Referred By Code</th> --}}
-                <th>Referral Code</th>
+                {{-- <th>Referral Code</th> --}}
                 {{-- <th>Referral Link</th> --}}
                 <th>Status</th>
                 <th>Actions</th>
@@ -212,15 +202,16 @@
                     {{-- <td>{{ $req->first_name }} {{ $req->last_name }}</td> --}}
                     <td class="request-username">{{ $req->username }}</td>
                     <td class="request-role">{{ $req->role }}</td>
-                    <td
-                        class="bg-{{ $req->referral()->first() == Auth::user() ? 'warning' : '' }} request-referred-by">
+                    {{-- <td class="bg-{{ $req->referral()->first() == Auth::user() ? 'warning' : '' }}">
                         {{ $req->referral()->first()?->username }}
                     </td>
-                    <td class="request-referred-by-role">{{ $req->referral()->first()?->role }}</td>
+                    <td>
+                        {{ $req->referral()->first()?->role }}
+                    </td> --}}
                     {{-- <td>{{ $req->email }}</td> --}}
                     <td class="request-country">{{ $req->country->name }}</td>
                     {{-- <td>{{ $req->referral()->first()->referral_code }}</td> --}}
-                    <td class="request-referral-code">{{ $req->user()->first()?->referral_code ?? '-' }}</td>
+                    {{-- <td>{{ $req->user()->first()?->referral_code ?? '-' }}</td> --}}
                     {{-- <td>
                         @if ($req->status->value === 'accepted' && $req->user()->first())
                             <div class="input-group input-group-sm">

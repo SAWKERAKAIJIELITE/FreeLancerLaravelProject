@@ -5,6 +5,7 @@ namespace App\Exceptions;
 use Exception;
 use Throwable;
 
+
 class SignupRequestAlreadyProcessedException extends Exception
 {
     public function __construct(

@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
-// use App\Enums\SignupRequestStatus;
+use App\Enums\SignupRequestStatus;
+use App\Support\Authorization\RolePermissionMatrix;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -30,7 +32,9 @@ class AccountRequest extends Model
         'approved_at',
         'user_id',
         'rejection_reason',
-        'reviewed_by'
+        'reviewed_by',
+        'who_fill_data_id',
+        'resubmitted_from_id',
     ];
 
     protected $hidden = [
@@ -50,13 +54,18 @@ class AccountRequest extends Model
             'terms_accepted_at' => 'datetime',
             'birthdate' => 'date',
             'password' => 'hashed',
-            'status' => 'string',
+            'status' => SignupRequestStatus::class,
         ];
     }
 
     public function getFullNameAttribute(): string
     {
         return trim("{$this->first_name} {$this->middle_name} {$this->last_name}");
+    }
+
+    public function getReviewedAtAttribute()
+    {
+        return $this->approved_at ?? $this->rejected_at ?? null;
     }
 
     public function country()
@@ -74,39 +83,90 @@ class AccountRequest extends Model
         return $this->belongsTo(Country::class, 'phone_country_id');
     }
 
-    // public function scopePending($query)
-    // {
-    //     return $query->where('status', SignupRequestStatus::Pending);
-    // }
+    public function isRelevantTo(User $user): bool
+    {
+        if (
+            $user->hasPermission(RolePermissionMatrix::SIGNUP_REQUESTS_VIEW_ALL)
+            || $user->hasPermission(RolePermissionMatrix::SIGNUP_REQUESTS_REVIEW_ALL)
+        ) {
+            return true;
+        }
 
-    // public function scopeApproved($query)
-    // {
-    //     return $query->where('status', SignupRequestStatus::Approved);
-    // }
+        if ($user->isNetworker()) {
+            return $this->referral_id === $user->id;
+        }
 
-    // public function scopeRejected($query)
-    // {
-    //     return $query->where('status', SignupRequestStatus::Rejected);
-    // }
+        return false;
+    }
 
-    // public function isPending(): bool
-    // {
-    //     return $this->status === SignupRequestStatus::Pending;
-    // }
+    public function scopeVisibleTo(Builder $query, User $user)
+    {
+        if ($user->hasPermission(RolePermissionMatrix::SIGNUP_REQUESTS_VIEW_ALL)) {
+            return $query;
+        }
 
-    // public function isApproved(): bool
-    // {
-    //     return $this->status === SignupRequestStatus::Approved;
-    // }
+        if ($user->hasPermission(RolePermissionMatrix::SIGNUP_REQUESTS_VIEW_RELEVANT)) {
+            return $query->where('referral_id', $user->id);
+        }
 
-    // public function isRejected(): bool
-    // {
-    //     return $this->status === SignupRequestStatus::Rejected;
-    // }
+        return $query->whereRaw('1 = 0');
+    }
+
+    public function hasStatus(SignupRequestStatus|string $status): bool
+    {
+        $value = $status instanceof SignupRequestStatus ? $status->value : $status;
+
+        return $this->status?->value === $value;
+    }
+
+    public function scopePending($query)
+    {
+        return $query->where('status', SignupRequestStatus::Pending);
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('status', SignupRequestStatus::Approved);
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->where('status', SignupRequestStatus::Rejected);
+    }
+
+    public function isPending(): bool
+    {
+        return $this->hasStatus(SignupRequestStatus::Pending);
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->hasStatus(SignupRequestStatus::Approved);
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->hasStatus(SignupRequestStatus::Rejected);
+    }
+
+    public function previousSubmission()
+    {
+        return $this->belongsTo(self::class, 'resubmitted_from_id');
+    }
+
+    public function resubmissions()
+    {
+        return $this->hasMany(self::class, 'resubmitted_from_id');
+    }
 
     public function referral()
     {
         return $this->belongsTo(User::class, 'referral_id');
+    }
+
+    public function who_filled_data()
+    {
+        return $this->belongsTo(User::class, 'who_fill_data_id');
     }
 
     public function user()

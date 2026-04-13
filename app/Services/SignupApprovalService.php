@@ -2,25 +2,32 @@
 
 namespace App\Services;
 
+use App\Enums\UserRole;
+use App\Events\SignupRequestReviewed;
 use App\Exceptions\SignupRequestAlreadyProcessedException;
 use App\Models\AccountRequest;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\SignupRejectedNotification;
+
 
 class SignupApprovalService
 {
     public function __construct(
-        private ReferralCodeGenerator $referralCodeGenerator
+        private ReferralCodeGenerator $referralCodeGenerator,
+        private AuthorizationService $authorizationService
     ) {
     }
 
     public function approve(AccountRequest $accountRequest, User $reviewer): User
     {
-        $this->ensureReviewerIsAdmin($reviewer);
+        $this->ensureReviewerCanReview($accountRequest, $reviewer);
 
-        if ($accountRequest->status != 'pending') {
+        if ($accountRequest->status->value != 'pending') {
             throw new SignupRequestAlreadyProcessedException();
         }
 
@@ -36,7 +43,10 @@ class SignupApprovalService
                 'user_id' => $user->id,
             ]);
 
-            event(new Registered($user));
+            if ($accountRequest->role == UserRole::Regular->value) {
+                event(new Registered($user));
+            }
+            event(new SignupRequestReviewed($accountRequest->fresh()));
 
             return $user;
         });
@@ -48,20 +58,33 @@ class SignupApprovalService
         User $reviewer
     ): AccountRequest {
 
-        $this->ensureReviewerIsAdmin($reviewer);
+        $this->ensureReviewerCanReview($accountRequest, $reviewer);
 
-        if ($accountRequest->status != 'pending') {
+        if ($accountRequest->status->value != 'pending') {
             throw new SignupRequestAlreadyProcessedException();
         }
+        return DB::transaction(function () use ($accountRequest, $reason, $reviewer) {
 
-        $accountRequest->update([
-            'status' => 'rejected',
-            'rejection_reason' => $reason,
-            'reviewed_by' => $reviewer->id,
-            'rejected_at' => now(),
-        ]);
+            $accountRequest->update([
+                'status' => 'rejected',
+                'rejection_reason' => $reason,
+                'reviewed_by' => $reviewer->id,
+                'rejected_at' => now(),
+                // 'resubmission_token' => Str::random(64),
+                // 'resubmission_token_expires_at' => now()->addDays(3), // configurable
+            ]);
 
-        return $accountRequest->refresh();
+            $accountRequest = $accountRequest->fresh();
+
+            event(new SignupRequestReviewed($accountRequest));
+
+            if ($accountRequest->role == UserRole::Regular->value) {
+                Notification::route('mail', $accountRequest->email)
+                    ->notify(new SignupRejectedNotification($accountRequest));
+            }
+
+            return $accountRequest;
+        });
     }
 
     private function buildUserData(AccountRequest $accountRequest): array
@@ -85,10 +108,10 @@ class SignupApprovalService
         ];
     }
 
-    private function ensureReviewerIsAdmin(User $reviewer): void
+    private function ensureReviewerCanReview(AccountRequest $accountRequest, User $reviewer): void
     {
-        if (!$reviewer->isAdmin()) {
-            throw new AuthorizationException('Only admins can review signup requests.');
+        if (!$this->authorizationService->canReviewSignupRequest($reviewer, $accountRequest)) {
+            throw new AuthorizationException('You are not allowed to review this signup request.');
         }
     }
 }

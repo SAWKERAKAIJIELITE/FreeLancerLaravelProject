@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Admin Signup</title>
+    <title>Signup</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -22,36 +22,63 @@
 
     <div class="container py-5">
         <div class="card shadow p-4 mx-auto" style="max-width: 1000px;">
-            <h3 class="text-center mb-4">Create Admin Account 🚀</h3>
+            <h3 class="text-center mb-4">Create Account 🚀</h3>
+            @if (!empty($rejectionReason))
+                <div class="alert alert-danger">
+                    <strong>Your previous signup request was rejected.</strong><br>
+                    {{ $rejectionReason }}
+                </div>
+            @endif
 
-            <form method="POST" action="{{ route('admin.signup') }}">
+            <form method="POST" action="{{ route('signup.store') }}">
                 @csrf
+
+                <input type="hidden" name="role" value="{{$prefill->role??'regular'}}">
+
+                {{-- @if (!empty($resubmittingFromId)) --}}
+                <input type="hidden" name="resubmitted_from_id" value="{{ $resubmittingFromId ?? null }}">
+                {{-- @endif --}}
+
                 <div class="row">
                     <div class="col-md-4 mb-3">
                         <label class="form-label">First Name</label>
-                        <input type="text" name="first_name" class="form-control" value="{{ old('first_name') }}"
-                            required>
+                        <input type="text" name="first_name"
+                            value="{{ old('first_name', $prefill->first_name ?? '') }}" class="form-control" required>
+                        @error('first_name')
+                            {{-- <div class="invalid-feedback">{{ $errors }}</div> --}}
+                        @enderror
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Middle Name</label>
-                        <input type="text" name="middle_name" class="form-control" value="{{ old('middle_name') }}">
+                        <input type="text" name="middle_name"
+                            value="{{ old('middle_name', $prefill->middle_name ?? '') }}" class="form-control">
+                        @error('middle_name')
+                            {{-- <div class="invalid-feedback">{{ $errors }}</div> --}}
+                        @enderror
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Last Name</label>
-                        <input type="text" name="last_name" class="form-control" value="{{ old('last_name') }}"
-                            required>
+                        <input type="text" name="last_name" value="{{ old('last_name', $prefill->last_name ?? '') }}"
+                            class="form-control" required>
+                        @error('last_name')
+                            {{-- <div class="invalid-feedback">{{ $errors }}</div> --}}
+                        @enderror
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Birthdate</label>
-                        <input type="date" name="birthdate" class="form-control" value="{{ old('birthdate') }}"
-                            required>
+                        <input type="date" name="birthdate" value="{{ old('birthdate', $prefill->birthdate->format('Y-m-d H-i-s') ?? '') }}"
+                            class="form-control" required>
+                        @error('birthdate')
+                            {{-- <div class="invalid-feedback">{{ $errors }}</div> --}}
+                        @enderror
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label" for="country_id">Country</label>
                         <select name="country_id" id="country_id" data-url="{{ route('metadata.countries') }}"
-                            data-selected="{{ old('country_id') }}" class="form-select" required>
+                            data-selected="{{ old('country_id', $prefill->country_id ?? '') }}" class="form-select"
+                            required>
                             <option value="">Select country</option>
                             {{-- <option value="USA">USA</option>
                             <option value="CAN">Canada</option>
@@ -63,10 +90,11 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label class="form-label" for="language_id">Language</label>
                         <select name="language_id" id="language_id" data-url="{{ route('metadata.languages') }}"
-                            data-selected="{{ old('language_id') }}" class="form-select" required>
+                            data-selected="{{ old('language_id', $prefill->language_id ?? '') }}" class="form-select"
+                            required>
                             <option value="">Select language</option>
                             {{-- <option value="English">English</option>
                             <option value="Spanish">Spanish</option>
@@ -76,11 +104,12 @@
                             {{-- <div class="invalid-feedback">{{ $errors }}</div> --}}
                         @enderror
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-5 mb-3">
                         <label class="form-label" for="phone_country_id">Country Code</label>
                         <select name="phone_country_id" id="phone_country_id"
                             data-url="{{ route('metadata.phone-countries') }}"
-                            data-selected="{{ old('phone_country_id') }}" class="form-control" required>
+                            data-selected="{{ old('phone_country_id', $prefill->phone_country_id ?? '') }}"
+                            class="form-control" required>
                             <option value="">Select country code</option>
                             {{-- <option value="+1">+1</option>
                             <option value="+44">+44</option>
@@ -92,16 +121,28 @@
                     </div>
                     <div class="col-md-3 mb-3">
                         <label class="form-label">Phone</label>
-                        <input name="phone" class="form-control" value="{{ old('phone') }}" required>
+                        <input name="phone" value="{{ old('phone', $prefill->phone ?? '') }}" class="form-control"
+                            required>
+                        @error('phone')
+                            {{-- <div class="invalid-feedback">{{ $errors }}</div> --}}
+                        @enderror
                     </div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Email</label>
-                    <input type="email" name="email" class="form-control" value="{{ old('email') }}" required>
+                    <input type="email" name="email" value="{{ old('email', $prefill->email ?? '') }}"
+                        class="form-control" required>
+                    @error('email')
+                        {{-- <div class="invalid-feedback">{{ $errors }}</div> --}}
+                    @enderror
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Username</label>
-                    <input name="username" class="form-control" value="{{ old('username') }}" required>
+                    <input name="username" value="{{ old('username', $prefill->username ?? '') }}" class="form-control"
+                        required>
+                    @error('username')
+                        {{-- <div class="invalid-feedback">{{ $errors }}</div> --}}
+                    @enderror
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Password</label>
@@ -112,6 +153,9 @@
                             <i class="bi bi-eye"></i>
                         </button>
                     </div>
+                    @error('password')
+                        {{-- <div class="invalid-feedback">{{ $errors }}</div> --}}
+                    @enderror
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Confirm Password</label>
@@ -124,12 +168,23 @@
                         </button>
                     </div>
                 </div>
+                <div class="mb-3">
+                    <label class="form-label">Referral Code</label>
+                    <input class="form-control" type="text" name="referral_input" value="{{ $referralCode }}"
+                        readonly>
 
-                <div class="form-check mb-3">
-                    <input type="checkbox" name="remember" class="form-check-input" id="remember">
-                    <label for="remember" class="form-check-label">Remember Me</label>
+                    @error('referral_input')
+                        {{-- <div class="invalid-feedback">{{ $errors }}</div> --}}
+                    @enderror
                 </div>
 
+                <div class="form-check mb-3">
+                    <input type="checkbox" name="terms_accepted" class="form-check-input" required>
+                    <label class="form-check-label">I agree to terms</label>
+                    @error('terms_accepted')
+                        {{-- <div class="invalid-feedback d-block">{{ $errors }}</div> --}}
+                    @enderror
+                </div>
                 <button class="btn btn-success w-100">Submit</button>
             </form>
             <div class="text-center mt-3">

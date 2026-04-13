@@ -24,7 +24,7 @@ return new class extends Migration {
             $table->foreignId('phone_country_id')->constrained('countries')->restrictOnDelete();
             $table->string('phone', 30);
 
-            $table->enum('role', ['super_admin', 'educator', 'regular'])->index();
+            $table->enum('role', ['super_admin', 'networker', 'educator', 'regular'])->index();
 
             $table->string('referral_code')->unique();
             $table->foreignId('referred_by')->nullable()->constrained('users')->nullOnDelete();

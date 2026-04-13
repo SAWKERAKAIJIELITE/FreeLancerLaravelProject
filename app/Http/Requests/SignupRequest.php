@@ -4,16 +4,16 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
-class RejectSignupRequestRequest extends FormRequest
+class SignupRequest extends StoreAccountRequestRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        // return $this->user()?->isAdmin() ?? false;
-        return true;
+        return !Auth::check();
     }
 
     /**
@@ -23,17 +23,10 @@ class RejectSignupRequestRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'rejection_reason' => 'nullable|string|min:5|max:1000',
-        ];
-    }
-
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            'rejection_reason' => $this->rejection_reason !== null
-                ? trim($this->rejection_reason)
-                : null,
-        ]);
+        $old_rules = parent::rules();
+        $old_rules['referral_input'] = 'nullable|string|max:50|exists:users,referral_code';
+        $old_rules['role'] = 'required|in:regular';
+        $old_rules['resubmitted_from_id'] = 'nullable|integer|exists:account_requests,id';
+        return $old_rules;
     }
 }

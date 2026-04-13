@@ -12,14 +12,14 @@ use Illuminate\Validation\Rule;
 
 class AdminAuthController extends Controller
 {
-    public function showSignupForm()
+    public function create()
     {
         return view('auth.admin-signup');
     }
 
-    public function signup(Request $request, ReferralCodeGenerator $referralCodeGenerator)
+    public function store(Request $request, ReferralCodeGenerator $referralCodeGenerator)
     {
-        if (!Auth::check() || Auth::user()->role !== 'super_admin') {
+        if (!Auth::check() || Auth::user()->role->value !== 'super_admin') {
             abort(403);
         }
         $request->validate([
@@ -63,6 +63,6 @@ class AdminAuthController extends Controller
         ]);
         $remember = $request->has('remember');
         Auth::login($admin, $remember);
-        return redirect('/admin/signup-requests');
+        return redirect()->route('signup-requests.index');
     }
 }

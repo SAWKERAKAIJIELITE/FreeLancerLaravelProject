@@ -7,16 +7,26 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Str;
+use App\Enums\UserRole;
+use App\Support\Authorization\RolePermissionMatrix;
+use Illuminate\Database\Eloquent\Builder;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    public const ROLE_ADMIN = 'super_admin';
-    public const ROLE_USER = 'regular';
-    public const ROLE_EDUCATOR = 'educator';
+    public function hasRole(UserRole|string $role): bool
+    {
+        $value = $role instanceof UserRole ? $role->value : $role;
+
+        return $this->role?->value === $value;
+    }
+
+    public function hasPermission(string $permission): bool
+    {
+        return RolePermissionMatrix::hasPermission($this->role?->value ?? '', $permission);
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -63,22 +73,28 @@ class User extends Authenticatable implements MustVerifyEmail
             'terms_accepted_at' => 'datetime',
             'birthdate' => 'date',
             'password' => 'hashed',
+            'role' => UserRole::class,
         ];
     }
 
     public function isAdmin(): bool
     {
-        return $this->role === self::ROLE_ADMIN;
+        return $this->hasRole(UserRole::SuperAdmin);
     }
 
-    public function isUser(): bool
+    public function isNetworker(): bool
     {
-        return $this->role === self::ROLE_USER;
+        return $this->hasRole(UserRole::Networker);
+    }
+
+    public function isRegular(): bool
+    {
+        return $this->hasRole(UserRole::Regular);
     }
 
     public function isEducator(): bool
     {
-        return $this->role === self::ROLE_EDUCATOR;
+        return $this->hasRole(UserRole::Educator);
     }
 
     public function getFullNameAttribute(): string
@@ -86,9 +102,14 @@ class User extends Authenticatable implements MustVerifyEmail
         return trim("{$this->first_name} {$this->middle_name} {$this->last_name}");
     }
 
-    public function scopeByReferralCode($query, string $code)
+    public function scopeByReferralCode(Builder $query, string $code)
     {
         return $query->where('referral_code', $code);
+    }
+
+    public function scopeSuperAdmin(Builder $query)
+    {
+        return $query->where('role', UserRole::SuperAdmin->value);
     }
 
     public function country()
@@ -116,6 +137,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function referrer()
     {
         return $this->belongsTo(User::class, 'referred_by');
+    }
+
+    public function filledByMe()
+    {
+        return $this->hasMany(AccountRequest::class, 'who_fill_data_id');
     }
 
     public function accountRequests()

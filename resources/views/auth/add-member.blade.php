@@ -22,9 +22,9 @@
 
     <div class="container py-5">
         <div class="card shadow p-4 mx-auto" style="max-width: 1000px;">
-            <h3 class="text-center mb-4">Create Account 🚀</h3>
+            <h3 class="text-center mb-4">Adding New {{ ucfirst($referral_role) }}</h3>
 
-            <form method="POST" action="{{ route('signup-requests.store') }}">
+            <form method="POST" action="{{ route('add-member') }}">
                 @csrf
                 <div class="row">
                     <div class="col-md-4 mb-3">
@@ -150,35 +150,18 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Role</label>
-                    @if ($referrer_role === 'super_admin')
-                        <select name="role" class="form-control" required>
-                            <option value="educator">Educator</option>
-                        </select>
-                    @elseif ($referrer_role === 'educator')
-                        <select name="role" class="form-control" required>
-                            <option value="regular">Regular</option>
-                        </select>
-                    @else
-                        <select name="role" class="form-control" required>
-                            <option value="regular">Regular</option>
-                        </select>
-                    @endif
+                    <input type="text" name="role" class="form-control" required readonly
+                        value="{{ $referral_role }}">
                     @error('role')
                         {{-- <div class="invalid-feedback">{{ $errors }}</div> --}}
                     @enderror
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Referral Code (optional)</label>
-                    {{-- <input type="text" name="referral_input" placeholder="Referral Code or Username" class="form-control"
-                        value="{{ old('referral_input',$referralCode ?? '') }}"> --}}
-                    @if (!empty($referralCode))
-                        <input class="form-control" type="text" name="referral_input"
-                            value="{{ $referralCode }}" readonly>
-                    @else
-                        <input class="form-control" type="text" name="referral_input"
-                            value="{{ old('referral_input') }}" placeholder="Referral Code or Username">
-                    @endif
+                    <label class="form-label">Referral Code</label>
+                    <input class="form-control" type="text" name="referral_input" value="{{ $referralCode }}"
+                        readonly>
+
                     @error('referral_input')
                         {{-- <div class="invalid-feedback">{{ $errors }}</div> --}}
                     @enderror

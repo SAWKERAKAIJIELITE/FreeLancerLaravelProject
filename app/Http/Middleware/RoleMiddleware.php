@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
+
 class RoleMiddleware
 {
     /**
@@ -16,7 +17,7 @@ class RoleMiddleware
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
-        if (!in_array(Auth::user()->role, $roles)) {
+        if (!in_array(Auth::user()->role->value, $roles)) {
             abort(403, 'Unauthorized');
         }
         return $next($request);

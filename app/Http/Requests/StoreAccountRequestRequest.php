@@ -2,8 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\SignupRequestStatus;
+use App\Enums\UserRole;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Rule;
 use App\Models\Country;
@@ -16,7 +19,8 @@ class StoreAccountRequestRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return Auth::check();
+        // return true;
     }
 
     /**
@@ -30,8 +34,7 @@ class StoreAccountRequestRequest extends FormRequest
             'first_name' => 'required|string|min:2|max:100|regex:/^[\pL\s\.\,\-\']+$/u',
             'middle_name' => 'nullable|string|min:2|max:100|regex:/^[\pL\s\.\,\-\']+$/u',
             'last_name' => 'required|string|min:2|max:100|regex:/^[\pL\s\.\,\-\']+$/u',
-            'birthdate' => 'required|date|before:today',
-            // 'country' => 'required|in:USA,Canada,Mexico',
+            'birthdate' => 'required|date|before:-10 years',
             'country_id' => [
                 'required',
                 'integer',
@@ -47,9 +50,25 @@ class StoreAccountRequestRequest extends FormRequest
                 'integer',
                 Rule::exists('countries', 'id')->where('is_active', true),
             ],
-            'phone' => 'required|string|numeric|min:6,max:30',
-            'email' => 'required|string|max:255|email|unique:account_requests,email|unique:users,email',
-            'username' => 'required|alpha_num|min:3|max:50|unique:account_requests,username|unique:users,username',
+            'phone' => 'required|string|numeric',
+            'email' => [
+                'required',
+                'string',
+                'max:255',
+                'email',
+                'unique:users,email',
+                Rule::unique('account_requests', 'email')
+                    ->where(fn($query) => $query->where('status', SignupRequestStatus::Pending)),
+            ],
+            'username' => [
+                'required',
+                'alpha_num',
+                'min:3',
+                'max:50',
+                'unique:users,username',
+                Rule::unique('account_requests', 'username')
+                    ->where(fn($query) => $query->where('status', SignupRequestStatus::Pending)),
+            ],
             'password' => [
                 'required',
                 'string',
@@ -61,8 +80,8 @@ class StoreAccountRequestRequest extends FormRequest
                     ->symbols(),
             ],
             'terms_accepted' => 'required|accepted',
-            'role' => 'required|in:educator,regular',
-            'referral_input' => 'nullable',
+            'role' => ["required", Rule::in(UserRole::values())],
+            'referral_input' => 'required|string|max:50|exists:users,referral_code',
         ];
     }
 
@@ -73,8 +92,8 @@ class StoreAccountRequestRequest extends FormRequest
             'middle_name.regex' => 'Middle name may contain only letters, spaces, commas, dots, apostrophes, and hyphens.',
             'last_name.regex' => 'Last name may contain only letters, spaces, commas, dots, apostrophes, and hyphens.',
             'phone.regex' => 'Phone number must contain digits only.',
-            'username.regex' => 'Username may contain letters and numbers only.',
-            // 'referral_code.exists' => 'The referral code is invalid.',
+            'email.unique' => 'This email is already used by an existing account or a pending signup request.',
+            'username.unique' => 'This username is already used by an existing account or a pending signup request.',
             'terms.accepted' => 'You must agree to the terms of use.',
         ];
     }

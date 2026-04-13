@@ -4,13 +4,16 @@ namespace App\Policies;
 
 use App\Models\AccountRequest;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use App\Services\AuthorizationService;
+use App\Support\Authorization\RolePermissionMatrix;
 
 class AccountRequestPolicy
 {
     public function review(User $user, AccountRequest $accountRequest): bool
     {
-        return $user->isAdmin();
+        return app(
+            AuthorizationService::class
+        )->canReviewSignupRequest($user, $accountRequest);
     }
 
     /**
@@ -18,7 +21,8 @@ class AccountRequestPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->hasPermission(RolePermissionMatrix::SIGNUP_REQUESTS_VIEW_ALL)
+            || $user->hasPermission(RolePermissionMatrix::SIGNUP_REQUESTS_VIEW_RELEVANT);
     }
 
     /**
@@ -26,15 +30,20 @@ class AccountRequestPolicy
      */
     public function view(User $user, AccountRequest $accountRequest): bool
     {
-        return false;
+        return app(
+            AuthorizationService::class
+        )->canViewSignupRequest($user, $accountRequest);
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function createAccountRequest(User $user, string $targetRole): bool
     {
-        return false;
+        dd('create policy hit');
+        return app(
+            AuthorizationService::class
+        )->canCreateAccountRequestType($user, $targetRole);
     }
 
     /**
